@@ -129,6 +129,15 @@
     .export-btn:hover {
       background: #e67e22;
     }
+
+    .clear-btn {
+      margin-left: 10px;
+      background: #bdc3c7;
+    }
+
+    .clear-btn:hover {
+      background: #95a5a6;
+    }
   </style>
 </head>
 <body>
@@ -162,10 +171,18 @@
     </table>
 
     <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+    <button class="clear-btn" onclick="clearAll()">Clear All</button>
   </div>
 
   <script>
     let entries = [];
+
+    // Load from localStorage on page load
+    const saved = localStorage.getItem("deliveryEntries");
+    if (saved) {
+      entries = JSON.parse(saved);
+      renderTable();
+    }
 
     function addEntry() {
       const name = document.getElementById('riderName').value.trim();
@@ -179,6 +196,7 @@
       }
 
       entries.push({ name, orderId, remarks, phone });
+      localStorage.setItem("deliveryEntries", JSON.stringify(entries));
       renderTable();
       clearInputs();
     }
@@ -214,6 +232,7 @@
 
     function deleteEntry(index) {
       entries.splice(index, 1);
+      localStorage.setItem("deliveryEntries", JSON.stringify(entries));
       renderTable();
     }
 
@@ -244,6 +263,14 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    function clearAll() {
+      if (confirm("Are you sure you want to clear all entries?")) {
+        entries = [];
+        localStorage.removeItem("deliveryEntries");
+        renderTable();
+      }
     }
   </script>
 </body>
