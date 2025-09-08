@@ -36,9 +36,6 @@
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeInForm 0.6s ease-out forwards;
     }
 
     input, select {
@@ -63,17 +60,11 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: 500;
-      transition: background 0.3s ease, transform 0.1s ease-out;
-      touch-action: manipulation;
+      transition: background 0.3s ease;
     }
 
     button:hover {
       background: #8a9a74;
-      animation: pulse 0.6s ease-in-out;
-    }
-
-    button:active {
-      transform: scale(0.97);
     }
 
     table {
@@ -105,8 +96,6 @@
 
     tr:hover {
       background-color: #f0f0f0;
-      box-shadow: inset 0 0 6px rgba(163, 177, 138, 0.2);
-      transition: box-shadow 0.3s ease;
     }
 
     tr.new-row {
@@ -116,19 +105,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInForm {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.03); }
-      100% { transform: scale(1); }
     }
 
     .actions button {
@@ -160,46 +136,6 @@
 
     .clear-btn:hover {
       background: #a8a4a0;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 22px;
-        margin-bottom: 20px;
-      }
-
-      .form-group {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-
-      input, select, button {
-        font-size: 14px;
-        padding: 10px;
-      }
-
-      table {
-        font-size: 13px;
-      }
-
-      th, td {
-        padding: 10px;
-      }
-
-      .actions button {
-        margin-bottom: 6px;
-        width: 100%;
-      }
-
-      .export-btn, .clear-btn {
-        width: 100%;
-        margin-top: 12px;
-        margin-left: 0;
-      }
     }
   </style>
 </head>
@@ -238,15 +174,6 @@
   </div>
 
   <script>
-    const adminPassword = "211225";
-
-    function verifyPassword() {
-      const input = prompt("Enter admin password to proceed:");
-      if (input === adminPassword) return true;
-      alert("Incorrect password. Action cancelled.");
-      return false;
-    }
-
     let entries = JSON.parse(localStorage.getItem("deliveryEntries")) || [];
 
     renderTable();
@@ -292,4 +219,53 @@
       const entry = entries[index];
       document.getElementById('riderName').value = entry.name;
       document.getElementById('orderId').value = entry.orderId;
-      document.getElement
+      document.getElementById('remarks').value = entry.remarks;
+      document.getElementById('phoneNumber').value = entry.phone;
+      deleteEntry(index);
+    }
+
+    function deleteEntry(index) {
+      entries.splice(index, 1);
+      localStorage.setItem("deliveryEntries", JSON.stringify(entries));
+      renderTable();
+    }
+
+    function clearInputs() {
+      document.getElementById('riderName').value = '';
+      document.getElementById('orderId').value = '';
+      document.getElementById('remarks').value = "DON'T GIVE THE ORDER TO THIS RIDER";
+      document.getElementById('phoneNumber').value = '';
+    }
+
+    function exportToCSV() {
+      if (entries.length === 0) {
+        alert("No data to export");
+        return;
+      }
+
+      const header = ["Rider Name", "Order ID", "Remarks", "Phone Number"];
+      const rows = entries.map(entry => [entry.name, entry.orderId, entry.remarks, entry.phone]);
+
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + header.join(",") + "\n"
+        + rows.map(e => e.map(v => "${v}").join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "delivery_tracker.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function clearAll() {
+      if (confirm("Are you sure you want to clear all entries?")) {
+        entries = [];
+        localStorage.removeItem("deliveryEntries");
+        renderTable();
+      }
+    }
+  </script>
+</body>
+</html>
