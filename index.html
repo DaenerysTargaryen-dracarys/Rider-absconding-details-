@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Delivery Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Viking-style font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cinzel', serif;
+      background: linear-gradient(to bottom, #1c1c1c, #3a3a3a);
+      margin: 0;
+      padding: 20px;
+      color: #f0f0f0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #2b2b2b;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+      border: 2px solid #8b5e3c;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f4d03f;
+      margin-bottom: 20px;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #8b5e3c;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #1f1f1f;
+      color: #f0f0f0;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
+      padding: 10px;
+      background: #8b5e3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    button:hover {
+      background: #a66f4b;
+    }
+
+    button:active {
+      transform: scale(0.97);
+      box-shadow: 0 0 0 4px rgba(139, 94, 60, 0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #1f1f1f;
+      color: #f0f0f0;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #555;
+      text-align: left;
+    }
+
+    th {
+      background: #8b5e3c;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background: #2c2c2c;
+    }
+
+    tr.new-row {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .actions button {
+      margin-right: 6px;
+      background: #4caf50;
+    }
+
+    .actions button.delete {
+      background: #e74c3c;
+    }
+
+    .actions button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚔️ Delivery Tracker</h1>
+    <div class="form-group">
+      <input type="text" id="riderName" placeholder="Rider Name" />
+      <input type="text" id="orderId" placeholder="Order ID" />
+      <input type="text" id="remarks" placeholder="Remarks" />
+      <input type="text" id="phoneNumber" placeholder="Phone Number" />
+      <button onclick="addEntry()">Add</button>
+    </div>
+
+    <table id="trackerTable">
+      <thead>
+        <tr>
+          <th>Rider Name</th>
+          <th>Order ID</th>
+          <th>Remarks</th>
+          <th>Phone Number</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    let entries = [];
+
+    function addEntry() {
+      const name = document.getElementById('riderName').value.trim();
+      const orderId = document.getElementById('orderId').value.trim();
+      const remarks = document.getElementById('remarks').value.trim();
+      const phone = document.getElementById('phoneNumber').value.trim();
+
+      if (!name || !orderId || !phone) {
+        alert("Please fill all required fields");
+        return;
+      }
+
+      entries.push({ name, orderId, remarks, phone });
+      renderTable();
+      clearInputs();
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector('#trackerTable tbody');
+      tbody.innerHTML = '';
+      entries.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.classList.add('new-row');
+        row.innerHTML = `
+          <td>${entry.name}</td>
+          <td>${entry.orderId}</td>
+          <td>${entry.remarks}</td>
+          <td>${entry.phone}</td>
+          <td class="actions">
+            <button onclick="editEntry(${index})">Edit</button>
+            <button class="delete" onclick="deleteEntry(${index})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function editEntry(index) {
+      const entry = entries[index];
+      document.getElementById('riderName').value = entry.name;
+      document.getElementById('orderId').value = entry.orderId;
+      document.getElementById('remarks').value = entry.remarks;
+      document.getElementById('phoneNumber').value = entry.phone;
+      deleteEntry(index);
+    }
+
+    function deleteEntry(index) {
+      entries.splice(index, 1);
+      renderTable();
+    }
+
+    function clearInputs() {
+      document.getElementById('riderName').value = '';
+      document.getElementById('orderId').value = '';
+      document.getElementById('remarks').value = '';
+      document.getElementById('phoneNumber').value = '';
+    }
+  </script>
+</body>
+</html>
