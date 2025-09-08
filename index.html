@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Delivery Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
@@ -289,8 +289,7 @@
     }
 
     function editEntry(index) {
-      if (!verifyPassword()) return;
       const entry = entries[index];
       document.getElementById('riderName').value = entry.name;
       document.getElementById('orderId').value = entry.orderId;
-      document.getElementById('
+      document.getElement
