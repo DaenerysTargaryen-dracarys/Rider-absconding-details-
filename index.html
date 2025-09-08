@@ -4,97 +4,99 @@
   <meta charset="UTF-8" />
   <title>Delivery Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Viking-style font -->
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Cinzel', serif;
-      background: linear-gradient(to bottom, #1c1c1c, #3a3a3a);
+      font-family: 'Inter', sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 20px;
-      color: #f0f0f0;
+      color: #333;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
-      background: #2b2b2b;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-      border: 2px solid #8b5e3c;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
 
     h1 {
       text-align: center;
-      color: #f4d03f;
-      margin-bottom: 20px;
+      color: #2c3e50;
+      margin-bottom: 30px;
       font-size: 28px;
-      letter-spacing: 1px;
     }
 
     .form-group {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     input {
-      padding: 10px;
-      border: 1px solid #8b5e3c;
-      border-radius: 6px;
-      font-size: 14px;
-      background: #1f1f1f;
-      color: #f0f0f0;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
 
-    input::placeholder {
-      color: #aaa;
+    input:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+      outline: none;
     }
 
     button {
-      padding: 10px;
-      background: #8b5e3c;
+      padding: 12px;
+      background: #3498db;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
       transition: background 0.3s, transform 0.1s;
     }
 
     button:hover {
-      background: #a66f4b;
+      background: #2980b9;
     }
 
     button:active {
-      transform: scale(0.97);
-      box-shadow: 0 0 0 4px rgba(139, 94, 60, 0.3);
+      transform: scale(0.98);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      background: #1f1f1f;
-      color: #f0f0f0;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     th, td {
-      padding: 12px;
-      border-bottom: 1px solid #555;
+      padding: 14px;
+      border-bottom: 1px solid #eee;
       text-align: left;
     }
 
     th {
-      background: #8b5e3c;
-      color: #fff;
-      font-weight: bold;
+      background: #3498db;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
 
     tr:hover {
-      background: #2c2c2c;
+      background-color: #f1f1f1;
     }
 
     tr.new-row {
@@ -108,7 +110,7 @@
 
     .actions button {
       margin-right: 6px;
-      background: #4caf50;
+      background: #2ecc71;
     }
 
     .actions button.delete {
@@ -122,7 +124,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>⚔️ Delivery Tracker</h1>
+    <h1>🚚 Delivery Tracker</h1>
     <div class="form-group">
       <input type="text" id="riderName" placeholder="Rider Name" />
       <input type="text" id="orderId" placeholder="Order ID" />
