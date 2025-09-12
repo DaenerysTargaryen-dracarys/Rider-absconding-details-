@@ -72,16 +72,17 @@
       100% { transform: translate(0,0) rotate(360deg); }
     }
 
-    /* Existing UI */
+    /* Container with frosted transparency */
     .container {
       max-width: 880px;
       margin: auto;
-      background: #ffffff;
+      background: rgba(255, 255, 255, 0.85);
       padding: 32px;
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       position: relative;
       z-index: 1;
+      backdrop-filter: blur(8px);
     }
 
     h1 {
@@ -104,8 +105,9 @@
       border: 1px solid #dcdcdc;
       border-radius: 10px;
       font-size: 15px;
-      background: #fafafa;
+      background: rgba(250, 250, 250, 0.8);
       transition: border-color 0.3s ease;
+      backdrop-filter: blur(4px);
     }
 
     input:focus, select:focus {
@@ -113,50 +115,101 @@
       outline: none;
     }
 
+    /* Buttons glassmorphism */
     button {
-      padding: 12px;
-      background: #a3b18a;
+      padding: 12px 18px;
+      background: rgba(163, 177, 138, 0.7);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       font-weight: 500;
-      transition: background 0.3s ease;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     button:hover {
-      background: #8a9a74;
+      background: rgba(138, 154, 116, 0.85);
+      transform: translateY(-2px);
     }
 
+    .actions button {
+      margin-right: 6px;
+      background: rgba(132, 169, 140, 0.7);
+    }
+
+    .actions button.delete {
+      background: rgba(215, 122, 97, 0.7);
+    }
+
+    .actions button:hover {
+      opacity: 0.95;
+    }
+
+    .export-btn {
+      margin-top: 20px;
+      background: rgba(244, 162, 97, 0.7);
+    }
+
+    .export-btn:hover {
+      background: rgba(231, 111, 81, 0.85);
+    }
+
+    .clear-btn {
+      margin-left: 10px;
+      background: rgba(188, 184, 177, 0.7);
+    }
+
+    .clear-btn:hover {
+      background: rgba(168, 164, 160, 0.85);
+    }
+
+    /* Table styling with transparency */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 16px;
-      background: #fff;
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      backdrop-filter: blur(6px);
     }
 
     th, td {
       padding: 12px 16px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid rgba(238, 238, 238, 0.6);
       text-align: left;
       font-size: 14px;
     }
 
     th {
-      background: #e9ecef;
+      background: rgba(233, 236, 239, 0.9);
       color: #4a4a4a;
       font-weight: 500;
     }
 
-    tr:nth-child(even) {
-      background-color: #f7f7f7;
+    /* Rounded corners */
+    thead tr:first-child th:first-child {
+      border-top-left-radius: 16px;
+    }
+    thead tr:first-child th:last-child {
+      border-top-right-radius: 16px;
+    }
+    tbody tr:last-child td:first-child {
+      border-bottom-left-radius: 16px;
+    }
+    tbody tr:last-child td:last-child {
+      border-bottom-right-radius: 16px;
     }
 
+    /* Alternating row colors with transparency */
+    tr:nth-child(even) {
+      background-color: rgba(247, 247, 247, 0.6);
+    }
     tr:hover {
-      background-color: #f0f0f0;
+      background-color: rgba(240, 240, 240, 0.7);
     }
 
     tr.new-row {
@@ -166,37 +219,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .actions button {
-      margin-right: 6px;
-      background: #84a98c;
-    }
-
-    .actions button.delete {
-      background: #d77a61;
-    }
-
-    .actions button:hover {
-      opacity: 0.9;
-    }
-
-    .export-btn {
-      margin-top: 20px;
-      background: #f4a261;
-    }
-
-    .export-btn:hover {
-      background: #e76f51;
-    }
-
-    .clear-btn {
-      margin-left: 10px;
-      background: #bcb8b1;
-    }
-
-    .clear-btn:hover {
-      background: #a8a4a0;
     }
   </style>
 </head>
@@ -215,7 +237,6 @@
       <input type="text" id="riderName" placeholder="Rider Name" />
       <input type="text" id="orderId" placeholder="Order ID" />
       <select id="remarks">
-        <option value="Rider Absconded with the order">Rider Absconded with the order</option>
         <option value="Rider Absconded with the order">Rider Absconded with the order</option>
         <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
         <option value="Wrong address delivered">Wrong address delivered</option>
@@ -244,7 +265,6 @@
 
   <script>
     let entries = JSON.parse(localStorage.getItem("deliveryEntries")) || [];
-
     renderTable();
 
     function addEntry() {
@@ -302,7 +322,7 @@
     function clearInputs() {
       document.getElementById('riderName').value = '';
       document.getElementById('orderId').value = '';
-      document.getElementById('remarks').value = "DON'T GIVE THE ORDER TO THIS RIDER";
+      document.getElementById('remarks').value = "Rider Absconded with the order";
       document.getElementById('phoneNumber').value = '';
     }
 
