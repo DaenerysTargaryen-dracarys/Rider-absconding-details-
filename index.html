@@ -1,217 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Delivery Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>🚚 Rider Absconding Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    /* 🌌 Aurora Background with particles */
+    /* Aurora Background */
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      color: #fff;
-      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle at top left, #1e3c72, #2a5298, #000);
+      height: 100vh;
+      background: radial-gradient(circle at top left, #1a2a6c, #b21f1f, #fdbb2d);
       overflow: hidden;
     }
 
-    body::before,
-    body::after {
+    body::before {
       content: "";
       position: absolute;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, rgba(0,255,200,0.25), transparent 70%),
-                  radial-gradient(circle, rgba(255,0,150,0.2), transparent 70%),
-                  radial-gradient(circle, rgba(0,200,255,0.15), transparent 70%);
-      animation: aurora 25s linear infinite alternate;
+      background: conic-gradient(from 0deg, #00f260, #0575e6, #64f38c, #f79d00, #ff6a00, #ee0979, #00f260);
+      animation: aurora 15s linear infinite;
+      filter: blur(120px);
+      opacity: 0.3;
     }
-    body::after { animation-delay: -12s; }
 
     @keyframes aurora {
-      0% { transform: translate(-20%, -10%) rotate(0deg); }
-      50% { transform: translate(10%, 10%) rotate(180deg); }
-      100% { transform: translate(-20%, -10%) rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    /* Floating particles */
-    .particle {
-      position: absolute;
-      width: 4px; height: 4px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      animation: float 20s linear infinite;
-    }
-    @keyframes float {
-      from { transform: translateY(100vh) translateX(0); opacity: 0; }
-      20% { opacity: 1; }
-      to { transform: translateY(-10vh) translateX(20vw); opacity: 0; }
-    }
-
-    /* 🌟 Glass container */
+    /* Container */
     .container {
-      max-width: 880px;
-      width: 90%;
-      margin: auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 32px;
+      position: relative;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
       border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(15px);
-      animation: popIn 1s ease;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+      padding: 30px;
+      max-width: 950px;
+      width: 95%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      animation: popIn 1s ease forwards;
     }
 
-    /* ✨ Header shimmer */
-    h1 {
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    h2 {
       text-align: center;
       font-size: 28px;
-      margin-bottom: 24px;
-      background: linear-gradient(90deg, #00f5d4, #9b5de5, #f15bb5, #00bbf9);
-      background-size: 300%;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5, #00f2fe);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shimmer 6s infinite linear;
-    }
-    @keyframes shimmer {
-      0% { background-position: 0%; }
-      100% { background-position: 300%; }
+      animation: shimmer 5s infinite linear;
     }
 
-    /* Form group */
-    .form-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+    @keyframes shimmer {
+      from { background-position: 0%; }
+      to { background-position: 200%; }
     }
 
     /* Inputs */
+    .form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
     input, select {
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 12px;
-      font-size: 15px;
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-      backdrop-filter: blur(8px);
-      transition: all 0.3s ease;
-      animation: fadeUp 1s ease forwards;
-    }
-    input:focus, select:focus {
-      border-color: #00f5d4;
-      background: rgba(255, 255, 255, 0.25);
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
       outline: none;
-      box-shadow: 0 0 6px #00f5d4;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transition: all 0.3s;
     }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    input:focus, select:focus {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.05);
     }
 
     /* Buttons */
     button {
-      padding: 12px 18px;
-      background: linear-gradient(135deg, #00f5d4, #00bbf9);
-      color: #fff;
+      padding: 10px 18px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      font-weight: 500;
-      transition: transform 0.2s, box-shadow 0.3s;
+      color: #fff;
+      font-weight: 600;
+      transition: 0.3s;
     }
-    button:hover {
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 0 12px rgba(0,245,212,0.6);
+
+    .add-btn {
+      background: linear-gradient(45deg, #00f2fe, #4facfe);
     }
-    button:active {
-      transform: scale(0.95);
+    .add-btn:hover { transform: scale(1.1); }
+
+    .export-btn {
+      background: linear-gradient(45deg, #f7971e, #ffd200);
+      color: #000;
     }
+    .export-btn:hover { transform: scale(1.1); }
+
+    .clear-btn {
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    }
+    .clear-btn:hover { transform: scale(1.1); }
 
     /* Table */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
+      margin-top: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      backdrop-filter: blur(8px);
     }
+
+    thead {
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+    }
+
     th, td {
-      padding: 12px 16px;
-      text-align: left;
+      padding: 12px;
+      text-align: center;
+    }
+
+    tbody tr {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      transition: 0.4s;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      margin: 0 3px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
       font-size: 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    th {
-      background: rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-    }
-    tr {
-      transition: background 0.3s ease;
-    }
-    tr:hover { background: rgba(255,255,255,0.05); }
-    tr.new-row {
-      animation: fadeInRow 0.6s ease;
-    }
-    @keyframes fadeInRow {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
-    .actions button {
-      margin-right: 6px;
-      background: linear-gradient(135deg, #9b5de5, #f15bb5);
-    }
-    .actions button.delete {
-      background: linear-gradient(135deg, #ef233c, #f77f00);
-    }
-
-    /* Special buttons */
-    .export-btn {
-      margin-top: 20px;
-      background: linear-gradient(135deg, #fcbf49, #f77f00);
-    }
-    .clear-btn {
-      margin-left: 10px;
-      background: linear-gradient(135deg, #adb5bd, #6c757d);
-    }
+    .edit-btn { background: #3ddc97; }
+    .delete-btn { background: #ff4b5c; }
   </style>
 </head>
 <body>
-  <!-- Floating particles -->
-  <div class="particle" style="left:10%; animation-delay:0s;"></div>
-  <div class="particle" style="left:30%; animation-delay:5s;"></div>
-  <div class="particle" style="left:50%; animation-delay:10s;"></div>
-  <div class="particle" style="left:70%; animation-delay:15s;"></div>
-  <div class="particle" style="left:90%; animation-delay:7s;"></div>
-
   <div class="container">
-    <h1>🚚 Rider Absconding Details</h1>
-    <div class="form-group">
-      <input type="text" id="riderName" placeholder="Rider Name" />
-      <input type="text" id="orderId" placeholder="Order ID" />
+    <h2>🚚 Rider Absconding Details</h2>
+
+    <div class="form">
+      <input type="text" id="riderName" placeholder="Rider Name">
+      <input type="text" id="orderId" placeholder="Order ID">
       <select id="remarks">
         <option value="Rider Absconded with the order">Rider Absconded with the order</option>
-        <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
-        <option value="Wrong address delivered">Wrong address delivered</option>
-        <option value="Other issue">Other issue</option>
+        <option value="Rider Lost Contact">Rider Lost Contact</option>
+        <option value="Other">Other</option>
       </select>
-      <input type="text" id="phoneNumber" placeholder="Phone Number" />
-      <button onclick="addEntry()">Add</button>
+      <input type="text" id="phoneNumber" placeholder="Phone Number">
+      <button class="add-btn" onclick="addEntry()">Add</button>
     </div>
 
-    <table id="trackerTable">
+    <table>
       <thead>
         <tr>
           <th>Rider Name</th>
@@ -221,22 +186,26 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="trackerTable"></tbody>
     </table>
 
-    <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
-    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+      <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+      <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase + App Script -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+    // Firebase config (your own keys here)
     const firebaseConfig = {
       apiKey: "AIzaSyC3de0poQVQ8Sa4SO2P2lVvukgtWkxfHtk",
       authDomain: "rider-absconding.firebaseapp.com",
-      databaseURL: "https://rider-absconding-default-rtdb.firebaseio.com/",
+      databaseURL: "https://rider-absconding-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "rider-absconding",
       storageBucket: "rider-absconding.appspot.com",
       messagingSenderId: "16507000056",
@@ -246,104 +215,87 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const dbRef = ref(db, "entries");
 
-    let entries = [];
-
-    function addEntry() {
-      const name = document.getElementById('riderName').value.trim();
-      const orderId = document.getElementById('orderId').value.trim();
-      const remarks = document.getElementById('remarks').value;
-      const phone = document.getElementById('phoneNumber').value.trim();
+    // Add entry
+    window.addEntry = async function() {
+      const name = document.getElementById("riderName").value.trim();
+      const orderId = document.getElementById("orderId").value.trim();
+      const remarks = document.getElementById("remarks").value;
+      const phone = document.getElementById("phoneNumber").value.trim();
 
       if (!name || !orderId || !phone) {
-        alert("Please fill all required fields");
+        alert("Fill all fields");
         return;
       }
 
-      const newEntryRef = push(ref(db, "deliveryEntries"));
-      set(newEntryRef, { name, orderId, remarks, phone });
-      clearInputs();
-    }
+      await push(dbRef, { name, orderId, remarks, phone });
+      document.getElementById("riderName").value = "";
+      document.getElementById("orderId").value = "";
+      document.getElementById("phoneNumber").value = "";
+    };
 
-    function renderTable() {
-      const tbody = document.querySelector('#trackerTable tbody');
-      tbody.innerHTML = '';
-      entries.forEach((entry) => {
-        const row = document.createElement('tr');
-        row.classList.add('new-row');
+    // Render table
+    onValue(dbRef, (snapshot) => {
+      const table = document.getElementById("trackerTable");
+      table.innerHTML = "";
+      snapshot.forEach((childSnap) => {
+        const entry = childSnap.val();
+        const id = childSnap.key;
+
+        const row = document.createElement("tr");
         row.innerHTML = `
           <td>${entry.name}</td>
           <td>${entry.orderId}</td>
           <td>${entry.remarks}</td>
           <td>${entry.phone}</td>
-          <td class="actions">
-            <button onclick="editEntry('${entry.id}')">Edit</button>
-            <button class="delete" onclick="deleteEntry('${entry.id}')">Delete</button>
+          <td>
+            <button class="action-btn edit-btn" onclick="editEntry('${id}','${entry.name}','${entry.orderId}','${entry.remarks}','${entry.phone}')">Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteEntry('${id}')">Delete</button>
           </td>
         `;
-        tbody.appendChild(row);
+        table.appendChild(row);
       });
-    }
-
-    function editEntry(id) {
-      const entry = entries.find(e => e.id === id);
-      if (!entry) return;
-      document.getElementById('riderName').value = entry.name;
-      document.getElementById('orderId').value = entry.orderId;
-      document.getElementById('remarks').value = entry.remarks;
-      document.getElementById('phoneNumber').value = entry.phone;
-      deleteEntry(id);
-    }
-
-    function deleteEntry(id) {
-      remove(ref(db, "deliveryEntries/" + id));
-    }
-
-    function clearInputs() {
-      document.getElementById('riderName').value = '';
-      document.getElementById('orderId').value = '';
-      document.getElementById('remarks').selectedIndex = 0;
-      document.getElementById('phoneNumber').value = '';
-    }
-
-    function exportToCSV() {
-      if (entries.length === 0) {
-        alert("No data to export");
-        return;
-      }
-      const header = ["Rider Name", "Order ID", "Remarks", "Phone Number"];
-      const rows = entries.map(e => [e.name, e.orderId, e.remarks, e.phone]);
-      let csvContent = "data:text/csv;charset=utf-8," + header.join(",") + "\n"
-        + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
-      const link = document.createElement("a");
-      link.href = encodeURI(csvContent);
-      link.download = "delivery_tracker.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function clearAll() {
-      if (confirm("Are you sure you want to clear all entries?")) {
-        remove(ref(db, "deliveryEntries"));
-      }
-    }
-
-    // Listen for DB changes
-    onValue(ref(db, "deliveryEntries"), (snapshot) => {
-      entries = [];
-      snapshot.forEach((childSnap) => {
-        entries.push({ id: childSnap.key, ...childSnap.val() });
-      });
-      renderTable();
     });
 
-    // Expose functions
-    window.addEntry = addEntry;
-    window.editEntry = editEntry;
-    window.deleteEntry = deleteEntry;
-    window.exportToCSV = exportToCSV;
-    window.clearAll = clearAll;
+    // Delete entry
+    window.deleteEntry = async function(id) {
+      await remove(ref(db, "entries/" + id));
+    };
+
+    // Edit entry
+    window.editEntry = function(id, name, orderId, remarks, phone) {
+      document.getElementById("riderName").value = name;
+      document.getElementById("orderId").value = orderId;
+      document.getElementById("remarks").value = remarks;
+      document.getElementById("phoneNumber").value = phone;
+
+      deleteEntry(id);
+    };
+
+    // Export to CSV
+    window.exportToCSV = function() {
+      const rows = [["Rider Name","Order ID","Remarks","Phone Number"]];
+      document.querySelectorAll("#trackerTable tr").forEach((tr) => {
+        const cols = Array.from(tr.children).slice(0,4).map(td => td.innerText);
+        rows.push(cols);
+      });
+
+      let csvContent = rows.map(e => e.join(",")).join("\n");
+      let blob = new Blob([csvContent], { type: "text/csv" });
+      let url = window.URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = "rider_absconding.csv";
+      a.click();
+    };
+
+    // Clear all
+    window.clearAll = async function() {
+      if (confirm("Delete all entries?")) {
+        await remove(dbRef);
+      }
+    };
   </script>
 </body>
 </html>
