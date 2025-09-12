@@ -1,78 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Rider Absconding Tracker — debug-ready</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <title>🚚 Rider Absconding Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet">
   <style>
-    /* minimal styles kept from your working UI */
-    body { font-family: Inter, Arial, sans-serif; margin:0; min-height:100vh;
-      display:flex;align-items:center;justify-content:center;
-      background: linear-gradient(135deg,#1e3c72,#2a5298); color:#fff;
+    /* Aurora Background */
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: #2e2e2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top left, #1e3c72, #2a5298, #000);
+      overflow: hidden;
     }
-    .container{width:95%;max-width:900px;padding:26px;border-radius:14px;
-      background:rgba(255,255,255,0.06);backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    body::before, body::after {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0,255,200,0.25), transparent 70%),
+                  radial-gradient(circle, rgba(255,0,150,0.2), transparent 70%),
+                  radial-gradient(circle, rgba(0,200,255,0.15), transparent 70%);
+      animation: aurora 22s linear infinite alternate;
     }
-    h2{ text-align:center; margin:0 0 18px; font-size:24px;
-      background:linear-gradient(90deg,#00f5d4,#9b5de5); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    body::after { animation-delay: -11s; }
+    @keyframes aurora {
+      0% { transform: translate(-20%, -10%) rotate(0deg); }
+      50% { transform: translate(10%, 10%) rotate(180deg); }
+      100% { transform: translate(-20%, -10%) rotate(360deg); }
     }
-    .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px}
-    input, select{padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.12); color:#fff}
-    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
-    button{padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
-    .add-btn{background:linear-gradient(90deg,#00f5d4,#00bbf9); color:#002}
-    .export-btn{background:linear-gradient(90deg,#ffd200,#f7971e); color:#000}
-    .clear-btn{background:linear-gradient(90deg,#ff6b6b,#ff4b4b)}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06)}
-    #status {margin-left:6px; font-size:13px; opacity:0.95}
-    .small { font-size:13px; opacity:0.9 }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      width: 90%;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(14px);
+      position: relative;
+      z-index: 1;
+      animation: popIn 0.6s ease;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      background: linear-gradient(90deg, #00f2fe, #4facfe, #ff6ec4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Form */
+    .form-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    input, select {
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 12px;
+      font-size: 15px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      backdrop-filter: blur(8px);
+      transition: 0.3s ease;
+    }
+    input::placeholder { color: rgba(255,255,255,0.6); }
+    input:focus, select:focus {
+      border-color: #4facfe;
+      background: rgba(255,255,255,0.25);
+      outline: none;
+    }
+
+    /* Buttons */
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: #fff;
+    }
+    .add-btn {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      animation: pulse 2s infinite;
+    }
+    .add-btn:hover { transform: scale(1.05); }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0px rgba(0,242,254,0.6); }
+      50% { box-shadow: 0 0 16px rgba(0,242,254,0.8); }
+    }
+    .export-btn { background: linear-gradient(90deg, #f6d365, #fda085); }
+    .clear-btn { background: linear-gradient(90deg, #ff6a6a, #d9534f); }
+    .actions button {
+      padding: 6px 12px;
+      font-size: 13px;
+      margin-right: 6px;
+      border-radius: 8px;
+    }
+    .actions .edit { background: #4cafef; }
+    .actions .delete { background: #e57373; }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 14px;
+      color: #fff;
+    }
+    th {
+      background: rgba(255,255,255,0.2);
+      font-weight: 600;
+    }
+    tr:nth-child(even) { background: rgba(255,255,255,0.05); }
+    tr.new-row { animation: fadeInUp 0.4s ease; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>🚚 Rider Absconding Details — Debug Build</h2>
+    <h1>🚚 Rider Absconding Details</h1>
 
-    <div class="form">
-      <input id="riderName" placeholder="Rider Name" />
-      <input id="orderId" placeholder="Order ID" />
+    <div class="form-group">
+      <input type="text" id="riderName" placeholder="Rider Name">
+      <input type="text" id="orderId" placeholder="Order ID">
       <select id="remarks">
-        <option>Rider Absconded with the order</option>
-        <option>Rider misbehaved with customer</option>
-        <option>Wrong address delivered</option>
-        <option>Other issue</option>
+        <option value="Rider Absconded with the order">Rider Absconded with the order</option>
+        <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
+        <option value="Wrong address delivered">Wrong address delivered</option>
+        <option value="Other issue">Other issue</option>
       </select>
-      <input id="phoneNumber" placeholder="Phone Number" />
-      <button id="addBtn" class="add-btn" onclick="addEntry()">Add</button>
+      <input type="text" id="phoneNumber" placeholder="Phone Number">
+      <button class="add-btn" onclick="addEntry()">Add</button>
     </div>
 
-    <div class="row">
-      <div style="flex:1">
-        <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
-        <button class="clear-btn" onclick="clearAll()">Clear All</button>
-      </div>
-      <div id="status" class="small">Status: <span id="statusText">Not connected</span></div>
-    </div>
-
-    <table>
+    <table id="trackerTable">
       <thead>
-        <tr><th>Rider Name</th><th>Order ID</th><th>Remarks</th><th>Phone</th><th>Actions</th></tr>
+        <tr>
+          <th>Rider Name</th>
+          <th>Order ID</th>
+          <th>Remarks</th>
+          <th>Phone</th>
+          <th>Actions</th>
+        </tr>
       </thead>
-      <tbody id="trackerTable"></tbody>
+      <tbody></tbody>
     </table>
+
+    <br>
+    <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+    <button class="clear-btn" onclick="clearAll()">Clear All</button>
   </div>
 
-  <!-- Use module imports; keep versions consistent -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // --- CONFIG: make sure this DB URL matches your Realtime DB URL from the Firebase console
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC3de0poQVQ8Sa4SO2P2lVvukgtWkxfHtk",
       authDomain: "rider-absconding.firebaseapp.com",
-      // Use the exact databaseURL from your Firebase console (no trailing slash)
-      databaseURL: "https://rider-absconding-default-rtdb.firebaseio.com",
+      databaseURL: "https://rider-absconding-default-rtdb.firebaseio.com/",
       projectId: "rider-absconding",
       storageBucket: "rider-absconding.appspot.com",
       messagingSenderId: "16507000056",
@@ -82,157 +202,92 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const entriesRef = ref(db, 'entries'); // path used in DB
+    const entriesRef = ref(db, "entries");
 
-    // UI elements
-    const statusText = document.getElementById('statusText');
-    const addBtn = document.getElementById('addBtn');
-    const tableBody = document.getElementById('trackerTable');
-
-    // Helper: show status
-    function setStatus(msg, color) {
-      statusText.innerText = msg;
-      if (color) statusText.style.color = color;
-    }
-
-    // Listen for realtime changes and render
-    onValue(entriesRef, (snapshot) => {
-      tableBody.innerHTML = '';
-      if (!snapshot.exists()) {
-        setStatus('Connected — no entries', '#ffd966');
-        return;
-      }
-      setStatus('Connected', '#90ee90');
-      snapshot.forEach(child => {
-        const id = child.key;
-        const data = child.val();
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(data.name||'')}</td>
-          <td>${escapeHtml(data.orderId||'')}</td>
-          <td>${escapeHtml(data.remarks||'')}</td>
-          <td>${escapeHtml(data.phone||'')}</td>
-          <td>
-            <button class="action-edit" onclick="editEntry('${id}')">Edit</button>
-            <button class="action-del" onclick="deleteEntry('${id}')">Delete</button>
-          </td>
-        `;
-        tableBody.prepend(tr);
-      });
-    }, (err) => {
-      console.error('Realtime DB listener error:', err);
-      setStatus('DB listener error — see console', '#ff6b6b');
-    });
-
-    // Add entry (exposed below as global)
-    async function addEntry() {
-      const name = document.getElementById('riderName').value.trim();
-      const orderId = document.getElementById('orderId').value.trim();
-      const remarks = document.getElementById('remarks').value;
-      const phone = document.getElementById('phoneNumber').value.trim();
+    function addEntry() {
+      const name = document.getElementById("riderName").value.trim();
+      const orderId = document.getElementById("orderId").value.trim();
+      const remarks = document.getElementById("remarks").value;
+      const phone = document.getElementById("phoneNumber").value.trim();
 
       if (!name || !orderId || !phone) {
-        alert('Please fill Rider Name, Order ID and Phone.');
+        alert("Please fill all required fields");
         return;
       }
 
-      try {
-        addBtn.disabled = true;
-        addBtn.innerText = 'Adding...';
-        // push to DB
-        await push(entriesRef, { name, orderId, remarks, phone });
-        // success
-        setStatus('Added entry', '#90ee90');
-        // clear fields
-        document.getElementById('riderName').value = '';
-        document.getElementById('orderId').value = '';
-        document.getElementById('phoneNumber').value = '';
-      } catch (err) {
-        console.error('Error adding entry:', err);
-        alert('Error adding entry — check console for details.');
-        setStatus('Error adding entry — see console', '#ff6b6b');
-      } finally {
-        addBtn.disabled = false;
-        addBtn.innerText = 'Add';
-      }
+      push(entriesRef, { name, orderId, remarks, phone });
+      clearInputs();
     }
 
-    // Delete entry
-    async function deleteEntry(id) {
-      if (!confirm('Delete this entry?')) return;
-      try {
-        await remove(ref(db, 'entries/' + id));
-        setStatus('Deleted entry', '#ffd966');
-      } catch (err) {
-        console.error('Delete error:', err);
-        alert('Error deleting — check console.');
-        setStatus('Error deleting — see console', '#ff6b6b');
-      }
+    function clearInputs() {
+      document.getElementById("riderName").value = "";
+      document.getElementById("orderId").value = "";
+      document.getElementById("remarks").selectedIndex = 0;
+      document.getElementById("phoneNumber").value = "";
     }
 
-    // Edit: prefill + remove old (you can change to update instead)
-    function editEntry(id) {
-      const row = document.querySelector(`#trackerTable tr td button[onclick*="${id}"]`);
-      // fetch the data from DB snapshot is simpler: just prefill by reading current DOM cells
-      // Since we prefixed rows with prepend, find the row by scanning
-      // Here we'll read DOM to prefill
-      const tr = Array.from(tableBody.children).find(r => r.querySelector(`button[onclick*="${id}"]`));
-      if (!tr) return;
-      document.getElementById('riderName').value = tr.children[0].innerText;
-      document.getElementById('orderId').value = tr.children[1].innerText;
-      document.getElementById('remarks').value = tr.children[2].innerText;
-      document.getElementById('phoneNumber').value = tr.children[3].innerText;
-      // remove old entry so "Add" will create new one (simple approach)
-      deleteEntry(id);
-      setStatus('Editing — modify fields and press Add', '#ffd966');
-    }
-
-    // Export CSV
-    function exportToCSV() {
-      const rows = [['Rider Name','Order ID','Remarks','Phone']];
-      Array.from(tableBody.children).forEach(tr => {
-        const cols = Array.from(tr.children).slice(0,4).map(td => td.innerText.replace(/"/g,'""'));
-        rows.push(cols);
+    function renderTable(snapshot) {
+      const tbody = document.querySelector("#trackerTable tbody");
+      tbody.innerHTML = "";
+      snapshot.forEach(child => {
+        const entry = child.val();
+        const row = document.createElement("tr");
+        row.classList.add("new-row");
+        row.innerHTML = `
+          <td>${entry.name}</td>
+          <td>${entry.orderId}</td>
+          <td>${entry.remarks}</td>
+          <td>${entry.phone}</td>
+          <td class="actions">
+            <button class="edit" onclick="editEntry('${child.key}', '${entry.name}', '${entry.orderId}', '${entry.remarks}', '${entry.phone}')">Edit</button>
+            <button class="delete" onclick="deleteEntry('${child.key}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
       });
-      const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'rider_entries.csv'; a.click();
-      URL.revokeObjectURL(url);
     }
 
-    // Clear all
-    async function clearAll() {
-      if (!confirm('Delete ALL entries from database?')) return;
-      try {
-        await remove(entriesRef);
-        setStatus('All entries removed', '#ffd966');
-      } catch (err) {
-        console.error('Clear all error:', err);
-        alert('Error clearing DB — check console.');
-      }
-    }
+    onValue(entriesRef, renderTable);
 
-    // Small HTML-escape helper for safety
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
+    window.editEntry = function (key, name, orderId, remarks, phone) {
+      document.getElementById("riderName").value = name;
+      document.getElementById("orderId").value = orderId;
+      document.getElementById("remarks").value = remarks;
+      document.getElementById("phoneNumber").value = phone;
+      deleteEntry(key);
+    };
 
-    // --- IMPORTANT: expose functions globally so inline onclick= works in a module
-    window.addEntry = addEntry;
-    window.deleteEntry = deleteEntry;
-    window.editEntry = editEntry;
-    window.exportToCSV = exportToCSV;
-    window.clearAll = clearAll;
+    window.deleteEntry = function (key) {
+      remove(ref(db, "entries/" + key));
+    };
 
-    // initial status
-    setStatus('Connecting to DB...', '#ffd966');
-    console.log('Debug: Firebase module initialized.');
+    window.clearAll = function () {
+      if (confirm("Clear all entries?")) remove(entriesRef);
+    };
 
+    window.exportToCSV = function () {
+      onValue(entriesRef, snapshot => {
+        if (!snapshot.exists()) {
+          alert("No data to export");
+          return;
+        }
+        const header = ["Rider Name","Order ID","Remarks","Phone"];
+        const rows = [];
+        snapshot.forEach(child => {
+          const e = child.val();
+          rows.push([e.name, e.orderId, e.remarks, e.phone]);
+        });
+        let csvContent = "data:text/csv;charset=utf-8," 
+          + header.join(",") + "\n"
+          + rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", "rider_absconding.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, { onlyOnce: true });
+    };
   </script>
 </body>
 </html>
