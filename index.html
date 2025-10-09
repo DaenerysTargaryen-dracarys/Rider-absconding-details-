@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rider Tracker (Plain UI)</title>
+  <title>Rider Tracker (Plain UI + Export)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,222 +12,171 @@
       margin: 0;
       padding: 20px;
     }
-    h1 {
-      text-align: center;
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
-    .form-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
+    h1 { text-align: center; font-size: 22px; margin-bottom: 20px; }
+    .form-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
     input, select, button {
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;
     }
-    input, select {
-      flex: 1 1 180px;
-    }
-    button {
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: #007bff;
-      color: #fff;
-      border: none;
-    }
-    .btn-danger {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-    }
-    .btn-secondary {
-      background: #6c757d;
-      color: #fff;
-      border: none;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background: #f2f2f2;
-    }
-    tr:hover {
-      background-color: #f9f9f9;
-    }
-    .actions button {
-      margin-right: 5px;
-      font-size: 13px;
-      padding: 5px 8px;
-    }
+    input, select { flex: 1 1 180px; }
+    button { cursor: pointer; }
+    .btn-primary { background: #007bff; color: #fff; border: none; }
+    .btn-danger { background: #dc3545; color: #fff; border: none; }
+    .btn-secondary { background: #6c757d; color: #fff; border: none; }
+    .btn-export { background: #28a745; color: #fff; border: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    tr:hover { background-color: #f9f9f9; }
+    .actions button { margin-right: 5px; font-size: 13px; padding: 5px 8px; }
   </style>
 </head>
 <body>
-  <h1>Rider Absconding Tracker</h1>
+<h1>Rider Absconding Tracker</h1>
 
-  <div class="form-container">
-    <input id="riderName" placeholder="Rider Name" />
-    <input id="orderId" placeholder="Order ID" />
-    <input id="orderValue" placeholder="Order Value" />
-    <input id="phoneNumber" placeholder="Phone Number" />
-    <select id="remarks">
-      <option value="Rider Absconded with order">Rider Absconded with order</option>
-      <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
-      <option value="Wrong address delivered">Wrong address delivered</option>
-      <option value="Other issue">Other issue</option>
-    </select>
-  </div>
+<div class="form-container">
+  <input id="riderName" placeholder="Rider Name" />
+  <input id="orderId" placeholder="Order ID" />
+  <input id="orderValue" placeholder="Order Value" />
+  <input id="phoneNumber" placeholder="Phone Number" />
+  <select id="remarks">
+    <option value="Rider Absconded with order">Rider Absconded with order</option>
+    <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
+    <option value="Wrong address delivered">Wrong address delivered</option>
+    <option value="Other issue">Other issue</option>
+  </select>
+</div>
 
-  <div style="margin-bottom:15px;">
-    <button class="btn-primary" onclick="addOrUpdate()">Save</button>
-    <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
-    <button class="btn-danger" onclick="clearAll()">Clear All</button>
-  </div>
+<div style="margin-bottom:15px;">
+  <button class="btn-primary" onclick="addOrUpdate()">Save</button>
+  <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
+  <button class="btn-danger" onclick="clearAll()">Clear All</button>
+  <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Rider Name</th>
-        <th>Order ID</th>
-        <th>Order Value</th>
-        <th>Phone</th>
-        <th>Remarks</th>
-        <th>Date</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
-    </tbody>
-  </table>
+<table>
+  <thead>
+    <tr>
+      <th>Rider Name</th>
+      <th>Order ID</th>
+      <th>Order Value</th>
+      <th>Phone</th>
+      <th>Remarks</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+  </tbody>
+</table>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCMcTi-dZnWVgeTFg17rLZwDaHJCM4RF08",
-      authDomain: "real-time-502b1.firebaseapp.com",
-      projectId: "real-time-502b1",
-      storageBucket: "real-time-502b1.firebasestorage.app",
-      messagingSenderId: "483376670752",
-      appId: "1:483376670752:web:366d8934a004c8372bf445",
-      measurementId: "G-NVV0L581GB",
-      databaseURL: "https://real-time-502b1-default-rtdb.firebaseio.com/"
+const firebaseConfig = {
+  apiKey: "AIzaSyCMcTi-dZnWVgeTFg17rLZwDaHJCM4RF08",
+  authDomain: "real-time-502b1.firebaseapp.com",
+  projectId: "real-time-502b1",
+  storageBucket: "real-time-502b1.firebasestorage.app",
+  messagingSenderId: "483376670752",
+  appId: "1:483376670752:web:366d8934a004c8372bf445",
+  measurementId: "G-NVV0L581GB",
+  databaseURL: "https://real-time-502b1-default-rtdb.firebaseio.com/"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dataRef = ref(db, "riderAbsconding");
+
+let snapshotStore = {};
+let editKey = null;
+const tableBody = document.getElementById('tableBody');
+
+function renderTable() {
+  tableBody.innerHTML = "";
+  const keys = Object.keys(snapshotStore);
+  if (keys.length === 0) {
+    tableBody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No data available</td></tr>";
+    return;
+  }
+  keys.reverse().forEach(key => {
+    const e = snapshotStore[key];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.name || ""}</td>
+      <td>${e.orderId || ""}</td>
+      <td>${e.orderValue || ""}</td>
+      <td>${e.phone || ""}</td>
+      <td>${e.remarks || ""}</td>
+      <td>${e.timestamp || ""}</td>
+      <td class="actions"></td>
+    `;
+    const actions = tr.querySelector(".actions");
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.onclick = () => {
+      document.getElementById("riderName").value = e.name;
+      document.getElementById("orderId").value = e.orderId;
+      document.getElementById("orderValue").value = e.orderValue;
+      document.getElementById("phoneNumber").value = e.phone;
+      document.getElementById("remarks").value = e.remarks;
+      editKey = key;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.onclick = () => { if(confirm("Delete this entry?")) remove(ref(db, `riderAbsconding/${key}`)); };
+    actions.append(editBtn, delBtn);
+    tableBody.appendChild(tr);
+  });
+}
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const dataRef = ref(db, "riderAbsconding");
+onValue(dataRef, (snapshot) => {
+  snapshotStore = {};
+  if(snapshot.exists()) snapshot.forEach(child => snapshotStore[child.key] = child.val());
+  renderTable();
+});
 
-    let snapshotStore = {};
-    let editKey = null;
+window.addOrUpdate = function() {
+  const name = document.getElementById("riderName").value.trim();
+  const orderId = document.getElementById("orderId").value.trim();
+  const orderValue = document.getElementById("orderValue").value.trim();
+  const phone = document.getElementById("phoneNumber").value.trim();
+  const remarks = document.getElementById("remarks").value;
+  if(!name || !orderId || !orderValue || !phone){ alert("Fill all fields."); return; }
+  const entry = { name, orderId, orderValue, phone, remarks, timestamp: new Date().toLocaleString() };
+  if(editKey){
+    update(ref(db, `riderAbsconding/${editKey}`), entry)
+      .then(()=>{ alert("Updated successfully"); clearForm(); editKey=null; });
+  } else { push(dataRef, entry).then(clearForm); }
+};
 
-    const tableBody = document.getElementById('tableBody');
+window.clearForm = function() {
+  document.getElementById("riderName").value = "";
+  document.getElementById("orderId").value = "";
+  document.getElementById("orderValue").value = "";
+  document.getElementById("phoneNumber").value = "";
+  document.getElementById("remarks").selectedIndex = 0;
+  editKey = null;
+};
 
-    function renderTable() {
-      tableBody.innerHTML = "";
-      const keys = Object.keys(snapshotStore);
-      if (keys.length === 0) {
-        tableBody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No data available</td></tr>";
-        return;
-      }
+window.clearAll = function() { if(confirm("Delete all entries?")) remove(dataRef); };
 
-      keys.reverse().forEach(key => {
-        const e = snapshotStore[key];
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${e.name || ""}</td>
-          <td>${e.orderId || ""}</td>
-          <td>${e.orderValue || ""}</td>
-          <td>${e.phone || ""}</td>
-          <td>${e.remarks || ""}</td>
-          <td>${e.timestamp || ""}</td>
-          <td class="actions"></td>
-        `;
-
-        const actions = tr.querySelector(".actions");
-
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
-        editBtn.onclick = () => {
-          document.getElementById("riderName").value = e.name;
-          document.getElementById("orderId").value = e.orderId;
-          document.getElementById("orderValue").value = e.orderValue;
-          document.getElementById("phoneNumber").value = e.phone;
-          document.getElementById("remarks").value = e.remarks;
-          editKey = key;
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        };
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Delete";
-        delBtn.onclick = () => {
-          if (confirm("Delete this entry?")) remove(ref(db, `riderAbsconding/${key}`));
-        };
-
-        actions.append(editBtn, delBtn);
-        tableBody.appendChild(tr);
-      });
-    }
-
-    onValue(dataRef, (snapshot) => {
-      snapshotStore = {};
-      if (snapshot.exists()) {
-        snapshot.forEach(child => snapshotStore[child.key] = child.val());
-      }
-      renderTable();
-    });
-
-    window.addOrUpdate = function() {
-      const name = document.getElementById("riderName").value.trim();
-      const orderId = document.getElementById("orderId").value.trim();
-      const orderValue = document.getElementById("orderValue").value.trim();
-      const phone = document.getElementById("phoneNumber").value.trim();
-      const remarks = document.getElementById("remarks").value;
-
-      if (!name || !orderId || !phone || !orderValue) {
-        alert("Please fill all fields (Name, Order ID, Order Value, Phone).");
-        return;
-      }
-
-      const entry = {
-        name, orderId, orderValue, phone, remarks,
-        timestamp: new Date().toLocaleString()
-      };
-
-      if (editKey) {
-        update(ref(db, `riderAbsconding/${editKey}`), entry)
-          .then(() => { alert("Updated successfully"); clearForm(); editKey = null; });
-      } else {
-        push(dataRef, entry).then(clearForm);
-      }
-    };
-
-    window.clearForm = function() {
-      document.getElementById("riderName").value = "";
-      document.getElementById("orderId").value = "";
-      document.getElementById("orderValue").value = "";
-      document.getElementById("phoneNumber").value = "";
-      document.getElementById("remarks").selectedIndex = 0;
-      editKey = null;
-    };
-
-    window.clearAll = function() {
-      if (confirm("Delete all entries?")) remove(dataRef);
-    };
-  </script>
+// Export to Excel/CSV
+window.exportToExcel = function(){
+  if(Object.keys(snapshotStore).length===0){ alert("No data to export."); return; }
+  const header = ["Rider Name","Order ID","Order Value","Phone","Remarks","Date"];
+  const rows = Object.values(snapshotStore).map(e => [e.name,e.orderId,e.orderValue,e.phone,e.remarks,e.timestamp]);
+  let csvContent = "data:text/csv;charset=utf-8," + header.join(",") + "\n" +
+    rows.map(r => r.map(v=>`"${v}"`).join(",")).join("\n");
+  const link = document.createElement("a");
+  link.setAttribute("href", encodeURI(csvContent));
+  link.setAttribute("download","rider_absconding_"+new Date().toISOString().slice(0,10)+".csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+</script>
 </body>
 </html>
