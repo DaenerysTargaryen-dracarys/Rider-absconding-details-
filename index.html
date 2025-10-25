@@ -28,6 +28,37 @@
     th { background: #f2f2f2; }
     tr:hover { background-color: #f9f9f9; }
     .actions button { margin-right: 5px; font-size: 13px; padding: 5px 8px; }
+    
+    /* Modal styles for password prompt */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 300px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -49,13 +80,14 @@
 <div style="margin-bottom:15px;">
   <button class="btn-primary" onclick="addOrUpdate()">Save</button>
   <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
-  <button class="btn-danger" onclick="clearAll()">Clear All</button>
+  <button class="btn-danger" onclick="showPasswordModal()">Clear All</button>
   <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
 </div>
 
 <table>
   <thead>
     <tr>
+      <th>Sr. No.</th>
       <th>Rider Name</th>
       <th>Order ID</th>
       <th>Order Value</th>
@@ -66,9 +98,23 @@
     </tr>
   </thead>
   <tbody id="tableBody">
-    <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+    <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
   </tbody>
 </table>
+
+<!-- Password Modal -->
+<div id="passwordModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closePasswordModal()">&times;</span>
+    <h3>Clear All Data</h3>
+    <p>Please enter password to clear all data:</p>
+    <input type="password" id="passwordInput" placeholder="Enter password" style="width: 90%; padding: 8px; margin: 10px 0;">
+    <div>
+      <button class="btn-danger" onclick="verifyPassword()">Confirm Clear All</button>
+      <button class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -101,7 +147,7 @@ function renderTable() {
   const keys = Object.keys(snapshotStore);
   
   if (keys.length === 0) {
-    tableBody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No data available</td></tr>";
+    tableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No data available</td></tr>";
     return;
   }
   
@@ -112,10 +158,12 @@ function renderTable() {
     return timeB - timeA;
   });
   
-  keys.forEach(key => {
+  // Add serial numbers
+  keys.forEach((key, index) => {
     const entry = snapshotStore[key];
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td>${index + 1}</td>
       <td>${entry.name || ""}</td>
       <td>${entry.orderId || ""}</td>
       <td>${entry.orderValue || ""}</td>
@@ -216,6 +264,29 @@ function clearForm() {
   editKey = null;
 }
 
+function showPasswordModal() {
+  document.getElementById("passwordModal").style.display = "block";
+  document.getElementById("passwordInput").value = "";
+}
+
+function closePasswordModal() {
+  document.getElementById("passwordModal").style.display = "none";
+}
+
+function verifyPassword() {
+  const password = document.getElementById("passwordInput").value;
+  const correctPassword = "211225";
+  
+  if (password === correctPassword) {
+    closePasswordModal();
+    clearAll();
+  } else {
+    alert("Incorrect password. Please try again.");
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordInput").focus();
+  }
+}
+
 function clearAll() {
   if (confirm("Are you sure you want to delete ALL entries? This action cannot be undone.")) {
     dataRef.remove()
@@ -236,8 +307,9 @@ function exportToExcel() {
     return;
   }
   
-  const header = ["Rider Name", "Order ID", "Order Value", "Phone", "Remarks", "Date"];
-  const rows = entries.map(entry => [
+  const header = ["Sr. No.", "Rider Name", "Order ID", "Order Value", "Phone", "Remarks", "Date"];
+  const rows = entries.map((entry, index) => [
+    index + 1,
     entry.name || "",
     entry.orderId || "",
     entry.orderValue || "",
@@ -268,6 +340,9 @@ function exportToExcel() {
 // Make functions available globally
 window.addOrUpdate = addOrUpdate;
 window.clearForm = clearForm;
+window.showPasswordModal = showPasswordModal;
+window.closePasswordModal = closePasswordModal;
+window.verifyPassword = verifyPassword;
 window.clearAll = clearAll;
 window.exportToExcel = exportToExcel;
 </script>
