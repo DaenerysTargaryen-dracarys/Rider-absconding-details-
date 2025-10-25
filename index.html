@@ -70,10 +70,12 @@
   </tbody>
 </table>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<script>
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCMcTi-dZnWVgeTFg17rLZwDaHJCM4RF08",
   authDomain: "real-time-502b1.firebaseapp.com",
@@ -85,9 +87,10 @@ const firebaseConfig = {
   databaseURL: "https://real-time-502b1-default-rtdb.firebaseio.com/"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dataRef = ref(db, "riderAbsconding");
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const dataRef = database.ref("riderAbsconding");
 
 let snapshotStore = {};
 let editKey = null;
@@ -96,87 +99,177 @@ const tableBody = document.getElementById('tableBody');
 function renderTable() {
   tableBody.innerHTML = "";
   const keys = Object.keys(snapshotStore);
+  
   if (keys.length === 0) {
     tableBody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No data available</td></tr>";
     return;
   }
-  keys.reverse().forEach(key => {
-    const e = snapshotStore[key];
+  
+  // Sort by timestamp (newest first)
+  keys.sort((a, b) => {
+    const timeA = new Date(snapshotStore[a].timestamp || 0);
+    const timeB = new Date(snapshotStore[b].timestamp || 0);
+    return timeB - timeA;
+  });
+  
+  keys.forEach(key => {
+    const entry = snapshotStore[key];
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${e.name || ""}</td>
-      <td>${e.orderId || ""}</td>
-      <td>${e.orderValue || ""}</td>
-      <td>${e.phone || ""}</td>
-      <td>${e.remarks || ""}</td>
-      <td>${e.timestamp || ""}</td>
+      <td>${entry.name || ""}</td>
+      <td>${entry.orderId || ""}</td>
+      <td>${entry.orderValue || ""}</td>
+      <td>${entry.phone || ""}</td>
+      <td>${entry.remarks || ""}</td>
+      <td>${entry.timestamp || ""}</td>
       <td class="actions"></td>
     `;
+    
     const actions = tr.querySelector(".actions");
+    
+    // Edit button
     const editBtn = document.createElement("button");
     editBtn.textContent = "Edit";
+    editBtn.className = "btn-secondary";
     editBtn.onclick = () => {
-      document.getElementById("riderName").value = e.name;
-      document.getElementById("orderId").value = e.orderId;
-      document.getElementById("orderValue").value = e.orderValue;
-      document.getElementById("phoneNumber").value = e.phone;
-      document.getElementById("remarks").value = e.remarks;
+      document.getElementById("riderName").value = entry.name || "";
+      document.getElementById("orderId").value = entry.orderId || "";
+      document.getElementById("orderValue").value = entry.orderValue || "";
+      document.getElementById("phoneNumber").value = entry.phone || "";
+      document.getElementById("remarks").value = entry.remarks || "";
       editKey = key;
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
+    
+    // Delete button
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
-    delBtn.onclick = () => { if(confirm("Delete this entry?")) remove(ref(db, `riderAbsconding/${key}`)); };
+    delBtn.className = "btn-danger";
+    delBtn.onclick = () => { 
+      if(confirm("Are you sure you want to delete this entry?")) {
+        database.ref(`riderAbsconding/${key}`).remove();
+      }
+    };
+    
     actions.append(editBtn, delBtn);
     tableBody.appendChild(tr);
   });
 }
 
-onValue(dataRef, (snapshot) => {
-  snapshotStore = {};
-  if(snapshot.exists()) snapshot.forEach(child => snapshotStore[child.key] = child.val());
+// Listen for data changes
+dataRef.on('value', (snapshot) => {
+  snapshotStore = snapshot.val() || {};
   renderTable();
 });
 
-window.addOrUpdate = function() {
+function addOrUpdate() {
   const name = document.getElementById("riderName").value.trim();
   const orderId = document.getElementById("orderId").value.trim();
   const orderValue = document.getElementById("orderValue").value.trim();
   const phone = document.getElementById("phoneNumber").value.trim();
   const remarks = document.getElementById("remarks").value;
-  if(!name || !orderId || !orderValue || !phone){ alert("Fill all fields."); return; }
-  const entry = { name, orderId, orderValue, phone, remarks, timestamp: new Date().toLocaleString() };
-  if(editKey){
-    update(ref(db, `riderAbsconding/${editKey}`), entry)
-      .then(()=>{ alert("Updated successfully"); clearForm(); editKey=null; });
-  } else { push(dataRef, entry).then(clearForm); }
-};
+  
+  // Validation
+  if(!name || !orderId || !orderValue || !phone) { 
+    alert("Please fill all required fields."); 
+    return; 
+  }
+  
+  const entry = { 
+    name, 
+    orderId, 
+    orderValue, 
+    phone, 
+    remarks, 
+    timestamp: new Date().toLocaleString() 
+  };
+  
+  if (editKey) {
+    // Update existing entry
+    database.ref(`riderAbsconding/${editKey}`).update(entry)
+      .then(() => {
+        alert("Entry updated successfully!");
+        clearForm();
+        editKey = null;
+      })
+      .catch((error) => {
+        alert("Error updating entry: " + error.message);
+      });
+  } else {
+    // Add new entry
+    dataRef.push(entry)
+      .then(() => {
+        clearForm();
+      })
+      .catch((error) => {
+        alert("Error adding entry: " + error.message);
+      });
+  }
+}
 
-window.clearForm = function() {
+function clearForm() {
   document.getElementById("riderName").value = "";
   document.getElementById("orderId").value = "";
   document.getElementById("orderValue").value = "";
   document.getElementById("phoneNumber").value = "";
   document.getElementById("remarks").selectedIndex = 0;
   editKey = null;
-};
+}
 
-window.clearAll = function() { if(confirm("Delete all entries?")) remove(dataRef); };
+function clearAll() {
+  if (confirm("Are you sure you want to delete ALL entries? This action cannot be undone.")) {
+    dataRef.remove()
+      .then(() => {
+        alert("All entries deleted successfully.");
+      })
+      .catch((error) => {
+        alert("Error deleting entries: " + error.message);
+      });
+  }
+}
 
-// Export to Excel/CSV
-window.exportToExcel = function(){
-  if(Object.keys(snapshotStore).length===0){ alert("No data to export."); return; }
-  const header = ["Rider Name","Order ID","Order Value","Phone","Remarks","Date"];
-  const rows = Object.values(snapshotStore).map(e => [e.name,e.orderId,e.orderValue,e.phone,e.remarks,e.timestamp]);
-  let csvContent = "data:text/csv;charset=utf-8," + header.join(",") + "\n" +
-    rows.map(r => r.map(v=>`"${v}"`).join(",")).join("\n");
+function exportToExcel() {
+  const entries = Object.values(snapshotStore);
+  
+  if (entries.length === 0) {
+    alert("No data available to export.");
+    return;
+  }
+  
+  const header = ["Rider Name", "Order ID", "Order Value", "Phone", "Remarks", "Date"];
+  const rows = entries.map(entry => [
+    entry.name || "",
+    entry.orderId || "",
+    entry.orderValue || "",
+    entry.phone || "",
+    entry.remarks || "",
+    entry.timestamp || ""
+  ]);
+  
+  let csvContent = "data:text/csv;charset=utf-8,";
+  
+  // Add header
+  csvContent += header.join(",") + "\n";
+  
+  // Add rows
+  rows.forEach(row => {
+    csvContent += row.map(cell => `"${cell}"`).join(",") + "\n";
+  });
+  
+  const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
-  link.setAttribute("href", encodeURI(csvContent));
-  link.setAttribute("download","rider_absconding_"+new Date().toISOString().slice(0,10)+".csv");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `rider_absconding_${new Date().toISOString().slice(0,10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-};
+}
+
+// Make functions available globally
+window.addOrUpdate = addOrUpdate;
+window.clearForm = clearForm;
+window.clearAll = clearAll;
+window.exportToExcel = exportToExcel;
 </script>
 </body>
 </html>
