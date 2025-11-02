@@ -3,348 +3,547 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rider Tracker (Plain UI + Export)</title>
+  <title>Rider Tracker (Comic UI + Export)</title>
   <style>
+    /* Comic-style UI */
     body {
-      font-family: Arial, sans-serif;
-      background: #ffffff;
-      color: #000000;
+      font-family: 'Comic Sans MS', 'Marker Felt', 'Arial Rounded MT Bold', sans-serif;
+      background: linear-gradient(135deg, #ffcc00 0%, #ff9900 100%);
+      color: #000;
       margin: 0;
       padding: 20px;
+      border: 8px solid #000;
+      box-shadow: 0 0 0 8px #ff3300, 0 0 0 16px #0066ff;
+      min-height: calc(100vh - 48px);
+      position: relative;
     }
-    h1 { text-align: center; font-size: 22px; margin-bottom: 20px; }
-    .form-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    
+    /* Comic bubble effect for the main container */
+    body::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: transparent;
+      border: 4px dashed #ff3300;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      text-shadow: 3px 3px 0 #ff3300, 5px 5px 0 #0066ff;
+      letter-spacing: 1px;
+      background: #fff;
+      padding: 15px;
+      border: 5px solid #000;
+      border-radius: 20px;
+      box-shadow: 8px 8px 0 #000;
+      transform: rotate(-1deg);
+    }
+    
+    .form-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 20px;
+      border: 5px solid #000;
+      border-radius: 15px;
+      box-shadow: 8px 8px 0 #000;
+      transform: rotate(0.5deg);
+    }
+    
     input, select, button {
-      padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;
+      padding: 12px;
+      font-size: 16px;
+      border: 3px solid #000;
+      border-radius: 10px;
+      font-family: 'Comic Sans MS', 'Marker Felt', sans-serif;
+      box-shadow: 3px 3px 0 #000;
+      transition: all 0.1s ease;
     }
-    input, select { flex: 1 1 180px; }
-    button { cursor: pointer; }
-    .btn-primary { background: #007bff; color: #fff; border: none; }
-    .btn-danger { background: #dc3545; color: #fff; border: none; }
-    .btn-secondary { background: #6c757d; color: #fff; border: none; }
-    .btn-export { background: #28a745; color: #fff; border: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #f2f2f2; }
-    tr:hover { background-color: #f9f9f9; }
-    .actions button { margin-right: 5px; font-size: 13px; padding: 5px 8px; }
+    
+    input:focus, select:focus {
+      outline: none;
+      box-shadow: 3px 3px 0 #0066ff;
+      transform: translate(-2px, -2px);
+    }
+    
+    input, select {
+      flex: 1 1 180px;
+      background: #fff;
+    }
+    
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    button:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0 0 0 #000;
+    }
+    
+    .btn-primary {
+      background: #0066ff;
+      color: #fff;
+    }
+    
+    .btn-danger {
+      background: #ff3300;
+      color: #fff;
+    }
+    
+    .btn-secondary {
+      background: #666;
+      color: #fff;
+    }
+    
+    .btn-export {
+      background: #00cc66;
+      color: #fff;
+    }
+    
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 20px;
+      border: 5px solid #000;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 8px 8px 0 #000;
+      background: #fff;
+    }
+    
+    th, td {
+      border: 3px solid #000;
+      padding: 12px;
+      text-align: left;
+      position: relative;
+    }
+    
+    th {
+      background: #ffcc00;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #fff;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f0f8ff;
+    }
+    
+    tr:hover {
+      background-color: #ffeb99;
+      transform: scale(1.01);
+    }
+    
+    .actions button {
+      margin-right: 5px;
+      font-size: 13px;
+      padding: 6px 10px;
+    }
     
     /* Modal styles for password prompt */
     .modal {
       display: none;
       position: fixed;
-      z-index: 1;
+      z-index: 100;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.4);
+      background-color: rgba(0,0,0,0.7);
     }
+    
     .modal-content {
-      background-color: #fefefe;
+      background: #fff;
       margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 300px;
-      border-radius: 5px;
+      padding: 25px;
+      border: 5px solid #000;
+      border-radius: 20px;
+      width: 320px;
       text-align: center;
+      box-shadow: 10px 10px 0 #000;
+      transform: rotate(-1deg);
     }
+    
     .close {
-      color: #aaa;
+      color: #ff3300;
       float: right;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: bold;
       cursor: pointer;
+      text-shadow: 2px 2px 0 #000;
     }
+    
     .close:hover {
-      color: black;
+      color: #000;
+    }
+    
+    /* Comic speech bubble for modal */
+    .modal-content::after {
+      content: "";
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 15px;
+      border-style: solid;
+      border-color: #000 transparent transparent transparent;
+    }
+    
+    /* Add some comic-style elements */
+    .comic-dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
+    }
+    
+    .comic-dot:nth-child(1) { top: 10px; left: 10px; }
+    .comic-dot:nth-child(2) { top: 10px; right: 10px; }
+    .comic-dot:nth-child(3) { bottom: 10px; left: 10px; }
+    .comic-dot:nth-child(4) { bottom: 10px; right: 10px; }
+    
+    /* Action icons */
+    .action-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .form-container {
+        flex-direction: column;
+      }
+      
+      input, select {
+        flex: 1 1 auto;
+      }
+      
+      .button-container {
+        flex-direction: column;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
     }
   </style>
 </head>
 <body>
-<h1>Rider Absconding Tracker</h1>
+  <!-- Comic dots for decoration -->
+  <div class="comic-dot"></div>
+  <div class="comic-dot"></div>
+  <div class="comic-dot"></div>
+  <div class="comic-dot"></div>
 
-<div class="form-container">
-  <input id="riderName" placeholder="Rider Name" />
-  <input id="orderId" placeholder="Order ID" />
-  <input id="orderValue" placeholder="Order Value" />
-  <input id="phoneNumber" placeholder="Phone Number" />
-  <select id="remarks">
-    <option value="Rider Absconded with order">Rider Absconded with order</option>
-    <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
-    <option value="Wrong address delivered">Wrong address delivered</option>
-    <option value="Other issue">Other issue</option>
-  </select>
-</div>
+  <h1>Rider Absconding Tracker</h1>
 
-<div style="margin-bottom:15px;">
-  <button class="btn-primary" onclick="addOrUpdate()">Save</button>
-  <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
-  <button class="btn-danger" onclick="showPasswordModal()">Clear All</button>
-  <button class="btn-export" onclick="exportToExcel()">Export Excel</button>
-</div>
+  <div class="form-container">
+    <input id="riderName" placeholder="Rider Name" />
+    <input id="orderId" placeholder="Order ID" />
+    <input id="orderValue" placeholder="Order Value" />
+    <input id="phoneNumber" placeholder="Phone Number" />
+    <select id="remarks">
+      <option value="Rider Absconded with order">Rider Absconded with order</option>
+      <option value="Rider misbehaved with customer">Rider misbehaved with customer</option>
+      <option value="Wrong address delivered">Wrong address delivered</option>
+      <option value="Other issue">Other issue</option>
+    </select>
+  </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Sr. No.</th>
-      <th>Rider Name</th>
-      <th>Order ID</th>
-      <th>Order Value</th>
-      <th>Phone</th>
-      <th>Remarks</th>
-      <th>Date</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody">
-    <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
-  </tbody>
-</table>
+  <div class="button-container">
+    <button class="btn-primary" onclick="addOrUpdate()">💾 Save</button>
+    <button class="btn-secondary" onclick="clearForm()">🧹 Clear Form</button>
+    <button class="btn-danger" onclick="showPasswordModal()">💥 Clear All</button>
+    <button class="btn-export" onclick="exportToExcel()">📊 Export Excel</button>
+  </div>
 
-<!-- Password Modal -->
-<div id="passwordModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closePasswordModal()">&times;</span>
-    <h3>Clear All Data</h3>
-    <p>Please enter password to clear all data:</p>
-    <input type="password" id="passwordInput" placeholder="Enter password" style="width: 90%; padding: 8px; margin: 10px 0;">
-    <div>
-      <button class="btn-danger" onclick="verifyPassword()">Confirm Clear All</button>
-      <button class="btn-secondary" onclick="closePasswordModal()">Cancel</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Sr. No.</th>
+        <th>Rider Name</th>
+        <th>Order ID</th>
+        <th>Order Value</th>
+        <th>Phone</th>
+        <th>Remarks</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closePasswordModal()">&times;</span>
+      <h3 style="text-transform: uppercase; text-shadow: 2px 2px 0 #ffcc00;">Clear All Data</h3>
+      <p>Please enter password to clear all data:</p>
+      <input type="password" id="passwordInput" placeholder="Enter password" style="width: 90%; padding: 10px; margin: 15px 0; border: 3px solid #000; border-radius: 8px;">
+      <div>
+        <button class="btn-danger" onclick="verifyPassword()">💣 Confirm Clear All</button>
+        <button class="btn-secondary" onclick="closePasswordModal()">❌ Cancel</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<script>
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCMcTi-dZnWVgeTFg17rLZwDaHJCM4RF08",
-  authDomain: "real-time-502b1.firebaseapp.com",
-  projectId: "real-time-502b1",
-  storageBucket: "real-time-502b1.firebasestorage.app",
-  messagingSenderId: "483376670752",
-  appId: "1:483376670752:web:366d8934a004c8372bf445",
-  measurementId: "G-NVV0L581GB",
-  databaseURL: "https://real-time-502b1-default-rtdb.firebaseio.com/"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const dataRef = database.ref("riderAbsconding");
-
-let snapshotStore = {};
-let editKey = null;
-const tableBody = document.getElementById('tableBody');
-
-function renderTable() {
-  tableBody.innerHTML = "";
-  const keys = Object.keys(snapshotStore);
-  
-  if (keys.length === 0) {
-    tableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No data available</td></tr>";
-    return;
-  }
-  
-  // Sort by timestamp (newest first)
-  keys.sort((a, b) => {
-    const timeA = new Date(snapshotStore[a].timestamp || 0);
-    const timeB = new Date(snapshotStore[b].timestamp || 0);
-    return timeB - timeA;
-  });
-  
-  // Add serial numbers
-  keys.forEach((key, index) => {
-    const entry = snapshotStore[key];
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${index + 1}</td>
-      <td>${entry.name || ""}</td>
-      <td>${entry.orderId || ""}</td>
-      <td>${entry.orderValue || ""}</td>
-      <td>${entry.phone || ""}</td>
-      <td>${entry.remarks || ""}</td>
-      <td>${entry.timestamp || ""}</td>
-      <td class="actions"></td>
-    `;
-    
-    const actions = tr.querySelector(".actions");
-    
-    // Edit button
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "Edit";
-    editBtn.className = "btn-secondary";
-    editBtn.onclick = () => {
-      document.getElementById("riderName").value = entry.name || "";
-      document.getElementById("orderId").value = entry.orderId || "";
-      document.getElementById("orderValue").value = entry.orderValue || "";
-      document.getElementById("phoneNumber").value = entry.phone || "";
-      document.getElementById("remarks").value = entry.remarks || "";
-      editKey = key;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMcTi-dZnWVgeTFg17rLZwDaHJCM4RF08",
+      authDomain: "real-time-502b1.firebaseapp.com",
+      projectId: "real-time-502b1",
+      storageBucket: "real-time-502b1.firebasestorage.app",
+      messagingSenderId: "483376670752",
+      appId: "1:483376670752:web:366d8934a004c8372bf445",
+      measurementId: "G-NVV0L581GB",
+      databaseURL: "https://real-time-502b1-default-rtdb.firebaseio.com/"
     };
-    
-    // Delete button
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Delete";
-    delBtn.className = "btn-danger";
-    delBtn.onclick = () => { 
-      if(confirm("Are you sure you want to delete this entry?")) {
-        database.ref(`riderAbsconding/${key}`).remove();
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const dataRef = database.ref("riderAbsconding");
+
+    let snapshotStore = {};
+    let editKey = null;
+    const tableBody = document.getElementById('tableBody');
+
+    function renderTable() {
+      tableBody.innerHTML = "";
+      const keys = Object.keys(snapshotStore);
+      
+      if (keys.length === 0) {
+        tableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No data available</td></tr>";
+        return;
       }
-    };
-    
-    actions.append(editBtn, delBtn);
-    tableBody.appendChild(tr);
-  });
-}
-
-// Listen for data changes
-dataRef.on('value', (snapshot) => {
-  snapshotStore = snapshot.val() || {};
-  renderTable();
-});
-
-function addOrUpdate() {
-  const name = document.getElementById("riderName").value.trim();
-  const orderId = document.getElementById("orderId").value.trim();
-  const orderValue = document.getElementById("orderValue").value.trim();
-  const phone = document.getElementById("phoneNumber").value.trim();
-  const remarks = document.getElementById("remarks").value;
-  
-  // Validation
-  if(!name || !orderId || !orderValue || !phone) { 
-    alert("Please fill all required fields."); 
-    return; 
-  }
-  
-  const entry = { 
-    name, 
-    orderId, 
-    orderValue, 
-    phone, 
-    remarks, 
-    timestamp: new Date().toLocaleString() 
-  };
-  
-  if (editKey) {
-    // Update existing entry
-    database.ref(`riderAbsconding/${editKey}`).update(entry)
-      .then(() => {
-        alert("Entry updated successfully!");
-        clearForm();
-        editKey = null;
-      })
-      .catch((error) => {
-        alert("Error updating entry: " + error.message);
+      
+      // Sort by timestamp (newest first)
+      keys.sort((a, b) => {
+        const timeA = new Date(snapshotStore[a].timestamp || 0);
+        const timeB = new Date(snapshotStore[b].timestamp || 0);
+        return timeB - timeA;
       });
-  } else {
-    // Add new entry
-    dataRef.push(entry)
-      .then(() => {
-        clearForm();
-      })
-      .catch((error) => {
-        alert("Error adding entry: " + error.message);
+      
+      // Add serial numbers
+      keys.forEach((key, index) => {
+        const entry = snapshotStore[key];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.name || ""}</td>
+          <td>${entry.orderId || ""}</td>
+          <td>${entry.orderValue || ""}</td>
+          <td>${entry.phone || ""}</td>
+          <td>${entry.remarks || ""}</td>
+          <td>${entry.timestamp || ""}</td>
+          <td class="actions"></td>
+        `;
+        
+        const actions = tr.querySelector(".actions");
+        
+        // Edit button
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️ Edit";
+        editBtn.className = "btn-secondary";
+        editBtn.onclick = () => {
+          document.getElementById("riderName").value = entry.name || "";
+          document.getElementById("orderId").value = entry.orderId || "";
+          document.getElementById("orderValue").value = entry.orderValue || "";
+          document.getElementById("phoneNumber").value = entry.phone || "";
+          document.getElementById("remarks").value = entry.remarks || "";
+          editKey = key;
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+        
+        // Delete button
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️ Delete";
+        delBtn.className = "btn-danger";
+        delBtn.onclick = () => { 
+          if(confirm("Are you sure you want to delete this entry?")) {
+            database.ref(`riderAbsconding/${key}`).remove();
+          }
+        };
+        
+        actions.append(editBtn, delBtn);
+        tableBody.appendChild(tr);
       });
-  }
-}
+    }
 
-function clearForm() {
-  document.getElementById("riderName").value = "";
-  document.getElementById("orderId").value = "";
-  document.getElementById("orderValue").value = "";
-  document.getElementById("phoneNumber").value = "";
-  document.getElementById("remarks").selectedIndex = 0;
-  editKey = null;
-}
+    // Listen for data changes
+    dataRef.on('value', (snapshot) => {
+      snapshotStore = snapshot.val() || {};
+      renderTable();
+    });
 
-function showPasswordModal() {
-  document.getElementById("passwordModal").style.display = "block";
-  document.getElementById("passwordInput").value = "";
-}
+    function addOrUpdate() {
+      const name = document.getElementById("riderName").value.trim();
+      const orderId = document.getElementById("orderId").value.trim();
+      const orderValue = document.getElementById("orderValue").value.trim();
+      const phone = document.getElementById("phoneNumber").value.trim();
+      const remarks = document.getElementById("remarks").value;
+      
+      // Validation
+      if(!name || !orderId || !orderValue || !phone) { 
+        alert("Please fill all required fields."); 
+        return; 
+      }
+      
+      const entry = { 
+        name, 
+        orderId, 
+        orderValue, 
+        phone, 
+        remarks, 
+        timestamp: new Date().toLocaleString() 
+      };
+      
+      if (editKey) {
+        // Update existing entry
+        database.ref(`riderAbsconding/${editKey}`).update(entry)
+          .then(() => {
+            alert("Entry updated successfully!");
+            clearForm();
+            editKey = null;
+          })
+          .catch((error) => {
+            alert("Error updating entry: " + error.message);
+          });
+      } else {
+        // Add new entry
+        dataRef.push(entry)
+          .then(() => {
+            clearForm();
+          })
+          .catch((error) => {
+            alert("Error adding entry: " + error.message);
+          });
+      }
+    }
 
-function closePasswordModal() {
-  document.getElementById("passwordModal").style.display = "none";
-}
+    function clearForm() {
+      document.getElementById("riderName").value = "";
+      document.getElementById("orderId").value = "";
+      document.getElementById("orderValue").value = "";
+      document.getElementById("phoneNumber").value = "";
+      document.getElementById("remarks").selectedIndex = 0;
+      editKey = null;
+    }
 
-function verifyPassword() {
-  const password = document.getElementById("passwordInput").value;
-  const correctPassword = "211225";
-  
-  if (password === correctPassword) {
-    closePasswordModal();
-    clearAll();
-  } else {
-    alert("Incorrect password. Please try again.");
-    document.getElementById("passwordInput").value = "";
-    document.getElementById("passwordInput").focus();
-  }
-}
+    function showPasswordModal() {
+      document.getElementById("passwordModal").style.display = "block";
+      document.getElementById("passwordInput").value = "";
+    }
 
-function clearAll() {
-  if (confirm("Are you sure you want to delete ALL entries? This action cannot be undone.")) {
-    dataRef.remove()
-      .then(() => {
-        alert("All entries deleted successfully.");
-      })
-      .catch((error) => {
-        alert("Error deleting entries: " + error.message);
+    function closePasswordModal() {
+      document.getElementById("passwordModal").style.display = "none";
+    }
+
+    function verifyPassword() {
+      const password = document.getElementById("passwordInput").value;
+      const correctPassword = "211225";
+      
+      if (password === correctPassword) {
+        closePasswordModal();
+        clearAll();
+      } else {
+        alert("Incorrect password. Please try again.");
+        document.getElementById("passwordInput").value = "";
+        document.getElementById("passwordInput").focus();
+      }
+    }
+
+    function clearAll() {
+      if (confirm("Are you sure you want to delete ALL entries? This action cannot be undone.")) {
+        dataRef.remove()
+          .then(() => {
+            alert("All entries deleted successfully.");
+          })
+          .catch((error) => {
+            alert("Error deleting entries: " + error.message);
+          });
+      }
+    }
+
+    function exportToExcel() {
+      const entries = Object.values(snapshotStore);
+      
+      if (entries.length === 0) {
+        alert("No data available to export.");
+        return;
+      }
+      
+      const header = ["Sr. No.", "Rider Name", "Order ID", "Order Value", "Phone", "Remarks", "Date"];
+      const rows = entries.map((entry, index) => [
+        index + 1,
+        entry.name || "",
+        entry.orderId || "",
+        entry.orderValue || "",
+        entry.phone || "",
+        entry.remarks || "",
+        entry.timestamp || ""
+      ]);
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // Add header
+      csvContent += header.join(",") + "\n";
+      
+      // Add rows
+      rows.forEach(row => {
+        csvContent += row.map(cell => `"${cell}"`).join(",") + "\n";
       });
-  }
-}
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `rider_absconding_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
-function exportToExcel() {
-  const entries = Object.values(snapshotStore);
-  
-  if (entries.length === 0) {
-    alert("No data available to export.");
-    return;
-  }
-  
-  const header = ["Sr. No.", "Rider Name", "Order ID", "Order Value", "Phone", "Remarks", "Date"];
-  const rows = entries.map((entry, index) => [
-    index + 1,
-    entry.name || "",
-    entry.orderId || "",
-    entry.orderValue || "",
-    entry.phone || "",
-    entry.remarks || "",
-    entry.timestamp || ""
-  ]);
-  
-  let csvContent = "data:text/csv;charset=utf-8,";
-  
-  // Add header
-  csvContent += header.join(",") + "\n";
-  
-  // Add rows
-  rows.forEach(row => {
-    csvContent += row.map(cell => `"${cell}"`).join(",") + "\n";
-  });
-  
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `rider_absconding_${new Date().toISOString().slice(0,10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-// Make functions available globally
-window.addOrUpdate = addOrUpdate;
-window.clearForm = clearForm;
-window.showPasswordModal = showPasswordModal;
-window.closePasswordModal = closePasswordModal;
-window.verifyPassword = verifyPassword;
-window.clearAll = clearAll;
-window.exportToExcel = exportToExcel;
-</script>
+    // Make functions available globally
+    window.addOrUpdate = addOrUpdate;
+    window.clearForm = clearForm;
+    window.showPasswordModal = showPasswordModal;
+    window.closePasswordModal = closePasswordModal;
+    window.verifyPassword = verifyPassword;
+    window.clearAll = clearAll;
+    window.exportToExcel = exportToExcel;
+  </script>
 </body>
 </html>
