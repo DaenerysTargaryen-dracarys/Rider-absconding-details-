@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rider Tracker (Comic UI + Export)</title>
+  <title>Rider Tracker (Comic UI + Search + Export)</title>
   <style>
     /* Comic-style UI */
     body {
@@ -60,6 +60,22 @@
       transform: rotate(0.5deg);
     }
     
+    .search-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border: 5px solid #000;
+      border-radius: 15px;
+      box-shadow: 8px 8px 0 #000;
+      transform: rotate(-0.5deg);
+    }
+    
+    .search-container input {
+      flex: 1;
+    }
+    
     input, select, button {
       padding: 12px;
       font-size: 16px;
@@ -113,6 +129,11 @@
       color: #fff;
     }
     
+    .btn-search {
+      background: #ff9900;
+      color: #fff;
+    }
+    
     .button-container {
       display: flex;
       flex-wrap: wrap;
@@ -159,6 +180,17 @@
       margin-right: 5px;
       font-size: 13px;
       padding: 6px 10px;
+    }
+    
+    .search-result-info {
+      background: #fff;
+      padding: 10px 15px;
+      border: 3px solid #000;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
+      box-shadow: 5px 5px 0 #000;
     }
     
     /* Modal styles for password prompt */
@@ -239,6 +271,10 @@
         flex-direction: column;
       }
       
+      .search-container {
+        flex-direction: column;
+      }
+      
       input, select {
         flex: 1 1 auto;
       }
@@ -263,6 +299,12 @@
 
   <h1>Rider Absconding Tracker</h1>
 
+  <div class="search-container">
+    <input id="searchPhone" placeholder="🔍 Search by Phone Number" />
+    <button class="btn-search" onclick="searchByPhone()">Search</button>
+    <button class="btn-secondary" onclick="clearSearch()">Clear Search</button>
+  </div>
+
   <div class="form-container">
     <input id="riderName" placeholder="Rider Name" />
     <input id="orderId" placeholder="Order ID" />
@@ -282,6 +324,8 @@
     <button class="btn-danger" onclick="showPasswordModal()">💥 Clear All</button>
     <button class="btn-export" onclick="exportToExcel()">📊 Export Excel</button>
   </div>
+
+  <div id="searchResultInfo" class="search-result-info" style="display: none;"></div>
 
   <table>
     <thead>
@@ -339,27 +383,34 @@
 
     let snapshotStore = {};
     let editKey = null;
+    let isSearching = false;
+    let searchResults = {};
     const tableBody = document.getElementById('tableBody');
+    const searchResultInfo = document.getElementById('searchResultInfo');
 
     function renderTable() {
       tableBody.innerHTML = "";
-      const keys = Object.keys(snapshotStore);
+      const dataToRender = isSearching ? searchResults : snapshotStore;
+      const keys = Object.keys(dataToRender);
       
       if (keys.length === 0) {
-        tableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No data available</td></tr>";
+        const message = isSearching ? 
+          "No matching records found." : 
+          "No data available";
+        tableBody.innerHTML = `<tr><td colspan='8' style='text-align:center;'>${message}</td></tr>`;
         return;
       }
       
       // Sort by timestamp (newest first)
       keys.sort((a, b) => {
-        const timeA = new Date(snapshotStore[a].timestamp || 0);
-        const timeB = new Date(snapshotStore[b].timestamp || 0);
+        const timeA = new Date(dataToRender[a].timestamp || 0);
+        const timeB = new Date(dataToRender[b].timestamp || 0);
         return timeB - timeA;
       });
       
       // Add serial numbers
       keys.forEach((key, index) => {
-        const entry = snapshotStore[key];
+        const entry = dataToRender[key];
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${index + 1}</td>
@@ -406,8 +457,52 @@
     // Listen for data changes
     dataRef.on('value', (snapshot) => {
       snapshotStore = snapshot.val() || {};
-      renderTable();
+      if (!isSearching) {
+        renderTable();
+      }
     });
+
+    function searchByPhone() {
+      const searchTerm = document.getElementById("searchPhone").value.trim();
+      
+      if (!searchTerm) {
+        alert("Please enter a phone number to search.");
+        return;
+      }
+      
+      // Filter entries by phone number
+      searchResults = {};
+      Object.keys(snapshotStore).forEach(key => {
+        const entry = snapshotStore[key];
+        if (entry.phone && entry.phone.includes(searchTerm)) {
+          searchResults[key] = entry;
+        }
+      });
+      
+      isSearching = true;
+      
+      // Show search result info
+      const resultCount = Object.keys(searchResults).length;
+      if (resultCount > 0) {
+        searchResultInfo.textContent = `Found ${resultCount} record(s) matching phone number: ${searchTerm}`;
+        searchResultInfo.style.display = "block";
+        searchResultInfo.style.background = "#aaffaa";
+      } else {
+        searchResultInfo.textContent = `No records found matching phone number: ${searchTerm}`;
+        searchResultInfo.style.display = "block";
+        searchResultInfo.style.background = "#ffaaaa";
+      }
+      
+      renderTable();
+    }
+
+    function clearSearch() {
+      isSearching = false;
+      searchResults = {};
+      document.getElementById("searchPhone").value = "";
+      searchResultInfo.style.display = "none";
+      renderTable();
+    }
 
     function addOrUpdate() {
       const name = document.getElementById("riderName").value.trim();
@@ -491,6 +586,7 @@
         dataRef.remove()
           .then(() => {
             alert("All entries deleted successfully.");
+            clearSearch(); // Also clear any active search
           })
           .catch((error) => {
             alert("Error deleting entries: " + error.message);
@@ -499,7 +595,8 @@
     }
 
     function exportToExcel() {
-      const entries = Object.values(snapshotStore);
+      const dataToExport = isSearching ? searchResults : snapshotStore;
+      const entries = Object.values(dataToExport);
       
       if (entries.length === 0) {
         alert("No data available to export.");
@@ -530,7 +627,12 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `rider_absconding_${new Date().toISOString().slice(0,10)}.csv`);
+      
+      const fileName = isSearching ? 
+        `rider_absconding_search_${new Date().toISOString().slice(0,10)}.csv` :
+        `rider_absconding_${new Date().toISOString().slice(0,10)}.csv`;
+      
+      link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -544,6 +646,8 @@
     window.verifyPassword = verifyPassword;
     window.clearAll = clearAll;
     window.exportToExcel = exportToExcel;
+    window.searchByPhone = searchByPhone;
+    window.clearSearch = clearSearch;
   </script>
 </body>
 </html>
