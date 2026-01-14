@@ -60,6 +60,48 @@
       transform: rotate(0.5deg);
     }
     
+    .search-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border: 5px solid #000;
+      border-radius: 15px;
+      box-shadow: 8px 8px 0 #000;
+      transform: rotate(-0.5deg);
+    }
+    
+    .search-container .search-input {
+      flex: 1 1 300px;
+      padding: 12px;
+      font-size: 16px;
+      border: 3px solid #000;
+      border-radius: 10px;
+      font-family: 'Comic Sans MS', 'Marker Felt', sans-serif;
+      box-shadow: 3px 3px 0 #000;
+      background: #fff;
+    }
+    
+    .search-container .search-input:focus {
+      outline: none;
+      box-shadow: 3px 3px 0 #00cc66;
+      transform: translate(-2px, -2px);
+    }
+    
+    .search-info {
+      flex: 1 1 100%;
+      text-align: center;
+      font-weight: bold;
+      color: #0066ff;
+      margin-top: 10px;
+      padding: 8px;
+      background: #ffeb99;
+      border-radius: 8px;
+      border: 2px dashed #ff3300;
+    }
+    
     input, select, button {
       padding: 12px;
       font-size: 16px;
@@ -113,6 +155,11 @@
       color: #fff;
     }
     
+    .btn-search {
+      background: #ff9900;
+      color: #fff;
+    }
+    
     .button-container {
       display: flex;
       flex-wrap: wrap;
@@ -153,6 +200,22 @@
     tr:hover {
       background-color: #ffeb99;
       transform: scale(1.01);
+    }
+    
+    .highlight-match {
+      background-color: #ff9900;
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 4px;
+      color: #000;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 30px;
+      font-size: 18px;
+      color: #ff3300;
+      font-weight: bold;
     }
     
     .actions button {
@@ -239,6 +302,10 @@
         flex-direction: column;
       }
       
+      .search-container {
+        flex-direction: column;
+      }
+      
       input, select {
         flex: 1 1 auto;
       }
@@ -281,6 +348,16 @@
     <button class="btn-secondary" onclick="clearForm()">🧹 Clear Form</button>
     <button class="btn-danger" onclick="showPasswordModal()">💥 Clear All</button>
     <button class="btn-export" onclick="exportToExcel()">📊 Export Excel</button>
+  </div>
+
+  <!-- Search Container -->
+  <div class="search-container">
+    <input id="searchInput" class="search-input" placeholder="🔍 Search by Name, Phone, or Order ID..." />
+    <button class="btn-search" onclick="performSearch()">Search</button>
+    <button class="btn-secondary" onclick="clearSearch()">Clear Search</button>
+    <div id="searchInfo" class="search-info" style="display: none;">
+      Showing <span id="matchCount">0</span> results for: "<span id="searchTerm">...</span>"
+    </div>
   </div>
 
   <table>
@@ -339,35 +416,98 @@
 
     let snapshotStore = {};
     let editKey = null;
+    let currentSearchTerm = "";
     const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const searchInfo = document.getElementById('searchInfo');
+    const matchCountSpan = document.getElementById('matchCount');
+    const searchTermSpan = document.getElementById('searchTerm');
+
+    // Add event listener for Enter key in search input
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        performSearch();
+      }
+    });
+
+    function performSearch() {
+      currentSearchTerm = searchInput.value.trim().toLowerCase();
+      if (currentSearchTerm) {
+        renderTable();
+        searchInfo.style.display = 'block';
+        searchTermSpan.textContent = currentSearchTerm;
+      } else {
+        clearSearch();
+      }
+    }
+
+    function clearSearch() {
+      searchInput.value = "";
+      currentSearchTerm = "";
+      searchInfo.style.display = 'none';
+      renderTable();
+    }
+
+    function highlightText(text, searchTerm) {
+      if (!searchTerm || !text) return text;
+      
+      const lowerText = text.toString().toLowerCase();
+      const lowerSearch = searchTerm.toLowerCase();
+      
+      if (!lowerText.includes(lowerSearch)) return text;
+      
+      const regex = new RegExp(`(${searchTerm})`, 'gi');
+      return text.toString().replace(regex, '<span class="highlight-match">$1</span>');
+    }
 
     function renderTable() {
       tableBody.innerHTML = "";
       const keys = Object.keys(snapshotStore);
       
-      if (keys.length === 0) {
-        tableBody.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No data available</td></tr>";
+      // Filter keys based on search term
+      let filteredKeys = keys;
+      let matchCount = 0;
+      
+      if (currentSearchTerm) {
+        filteredKeys = keys.filter(key => {
+          const entry = snapshotStore[key];
+          const searchInName = entry.name && entry.name.toLowerCase().includes(currentSearchTerm);
+          const searchInPhone = entry.phone && entry.phone.includes(currentSearchTerm);
+          const searchInOrderId = entry.orderId && entry.orderId.toLowerCase().includes(currentSearchTerm);
+          const searchInRemarks = entry.remarks && entry.remarks.toLowerCase().includes(currentSearchTerm);
+          
+          return searchInName || searchInPhone || searchInOrderId || searchInRemarks;
+        });
+        matchCount = filteredKeys.length;
+        matchCountSpan.textContent = matchCount;
+      }
+      
+      if (filteredKeys.length === 0) {
+        const message = currentSearchTerm ? 
+          `<tr><td colspan="8" class="no-data">No results found for "${currentSearchTerm}"</td></tr>` :
+          `<tr><td colspan="8" class="no-data">No data available</td></tr>`;
+        tableBody.innerHTML = message;
         return;
       }
       
       // Sort by timestamp (newest first)
-      keys.sort((a, b) => {
+      filteredKeys.sort((a, b) => {
         const timeA = new Date(snapshotStore[a].timestamp || 0);
         const timeB = new Date(snapshotStore[b].timestamp || 0);
         return timeB - timeA;
       });
       
       // Add serial numbers
-      keys.forEach((key, index) => {
+      filteredKeys.forEach((key, index) => {
         const entry = snapshotStore[key];
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td>${entry.name || ""}</td>
-          <td>${entry.orderId || ""}</td>
+          <td>${currentSearchTerm ? highlightText(entry.name || "", currentSearchTerm) : (entry.name || "")}</td>
+          <td>${currentSearchTerm ? highlightText(entry.orderId || "", currentSearchTerm) : (entry.orderId || "")}</td>
           <td>${entry.orderValue || ""}</td>
-          <td>${entry.phone || ""}</td>
-          <td>${entry.remarks || ""}</td>
+          <td>${currentSearchTerm ? highlightText(entry.phone || "", currentSearchTerm) : (entry.phone || "")}</td>
+          <td>${currentSearchTerm ? highlightText(entry.remarks || "", currentSearchTerm) : (entry.remarks || "")}</td>
           <td>${entry.timestamp || ""}</td>
           <td class="actions"></td>
         `;
@@ -544,6 +684,8 @@
     window.verifyPassword = verifyPassword;
     window.clearAll = clearAll;
     window.exportToExcel = exportToExcel;
+    window.performSearch = performSearch;
+    window.clearSearch = clearSearch;
   </script>
 </body>
 </html>
